@@ -14,7 +14,7 @@ export default function App() {
             WhatsApp Scheduler
           </div>
           <div className="nav-links">
-            <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               Dashboard
             </NavLink>
             <NavLink to="/schedule" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
@@ -27,7 +27,8 @@ export default function App() {
         </nav>
         <main className="main">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Schedule />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/templates" element={<Templates />} />
           </Routes>
