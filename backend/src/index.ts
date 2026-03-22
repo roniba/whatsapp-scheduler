@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { initWhatsApp } from './whatsapp';
 import { startScheduler } from './scheduler';
 import statusRouter from './routes/status';
@@ -15,6 +16,13 @@ app.use(express.json());
 app.use('/api', statusRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/templates', templatesRouter);
+
+// Serve the built React frontend
+const FRONTEND_DIST = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(FRONTEND_DIST));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`[Server] Running on http://localhost:${PORT}`);

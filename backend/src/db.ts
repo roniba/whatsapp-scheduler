@@ -59,14 +59,14 @@ export function getPendingMessages(): ScheduledMessage[] {
   const db = getDb();
   return db
     .prepare(`SELECT * FROM scheduled_messages WHERE status = 'pending' AND scheduled_at <= ? ORDER BY scheduled_at ASC`)
-    .all(new Date().toISOString()) as ScheduledMessage[];
+    .all(new Date().toISOString()) as unknown as ScheduledMessage[];
 }
 
 export function getAllMessages(): ScheduledMessage[] {
   const db = getDb();
   return db
     .prepare(`SELECT * FROM scheduled_messages ORDER BY scheduled_at DESC`)
-    .all() as ScheduledMessage[];
+    .all() as unknown as ScheduledMessage[];
 }
 
 export function createMessage(
@@ -81,7 +81,7 @@ export function createMessage(
     .run(recipient, recipientName, message, scheduledAt);
   return db
     .prepare(`SELECT * FROM scheduled_messages WHERE id = ?`)
-    .get(result.lastInsertRowid) as ScheduledMessage;
+    .get(result.lastInsertRowid) as unknown as ScheduledMessage;
 }
 
 export function updateMessageStatus(id: number, status: 'sent' | 'failed', sentAt?: string) {
@@ -97,7 +97,7 @@ export function deleteMessage(id: number) {
 }
 
 export function getAllTemplates(): Template[] {
-  return getDb().prepare(`SELECT * FROM templates ORDER BY name ASC`).all() as Template[];
+  return getDb().prepare(`SELECT * FROM templates ORDER BY name ASC`).all() as unknown as Template[];
 }
 
 export function createTemplate(name: string, message: string): Template {
@@ -105,7 +105,7 @@ export function createTemplate(name: string, message: string): Template {
   const result = db
     .prepare(`INSERT INTO templates (name, message, created_at) VALUES (?, ?, ?)`)
     .run(name, message, new Date().toISOString());
-  return db.prepare(`SELECT * FROM templates WHERE id = ?`).get(result.lastInsertRowid) as Template;
+  return db.prepare(`SELECT * FROM templates WHERE id = ?`).get(result.lastInsertRowid) as unknown as Template;
 }
 
 export function deleteTemplate(id: number) {
