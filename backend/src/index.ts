@@ -12,12 +12,15 @@ const app = express();
 const PORT = process.env.PORT ?? 3001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 app.use('/api', statusRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/templates', templatesRouter);
 app.use('/api/settings', settingsRouter);
+
+// Serve uploaded media files
+app.use('/uploads', express.static(path.join(__dirname, '../../data/uploads')));
 
 // Serve the built React frontend
 const FRONTEND_DIST = path.join(__dirname, '../../frontend/dist');

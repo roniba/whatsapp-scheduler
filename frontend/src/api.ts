@@ -19,6 +19,7 @@ export interface ScheduledMessage {
   scheduled_at: string;
   sent_at: string | null;
   status: 'pending' | 'sent' | 'failed';
+  media_path: string | null;
 }
 
 export interface Template {
@@ -49,6 +50,8 @@ export const api = {
     recipientName: string | null;
     message: string;
     scheduledAt: string;
+    mediaBase64?: string | null;
+    mediaType?: string | null;
   }): Promise<ScheduledMessage> {
     const res = await fetch(`${BASE}/messages`, {
       method: 'POST',

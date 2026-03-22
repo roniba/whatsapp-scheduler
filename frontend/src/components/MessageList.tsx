@@ -32,7 +32,14 @@ export default function MessageList({ messages, onDelete }: Props) {
               {STATUS_LABEL[msg.status]}
             </span>
           </div>
-          <p className="message-body">{msg.message}</p>
+          {msg.message && <p className="message-body">{msg.message}</p>}
+          {msg.media_path && (
+            <img
+              src={`/uploads/${msg.media_path.split('/').pop()}`}
+              alt="Attachment"
+              className="message-thumbnail"
+            />
+          )}
           <div className="message-footer">
             <span className="message-time">
               {msg.status === 'sent' && msg.sent_at

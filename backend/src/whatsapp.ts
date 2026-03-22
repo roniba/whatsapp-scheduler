@@ -1,6 +1,7 @@
-import { Client, LocalAuth, Chat } from 'whatsapp-web.js';
-import { EventEmitter } from 'events';
+import { Client, LocalAuth, Chat, MessageMedia } from 'whatsapp-web.js';
+import fs from 'fs';
 import path from 'path';
+import { EventEmitter } from 'events';
 
 export type ConnectionStatus = 'disconnected' | 'qr_ready' | 'ready';
 
@@ -75,13 +76,25 @@ export function initWhatsApp() {
   state.client = client;
 }
 
-export async function sendMessage(recipient: string, message: string): Promise<void> {
+export async function sendMessage(recipient: string, message: string, mediaPath?: string | null): Promise<void> {
   if (!state.client || state.status !== 'ready') {
     throw new Error('WhatsApp client is not ready');
   }
-  // recipient is either a phone number (e.g. "15551234567") or a group chat ID (e.g. "XXXXX@g.us")
   const chatId = recipient.includes('@') ? recipient : `${recipient}@c.us`;
-  await state.client.sendMessage(chatId, message);
+
+  if (mediaPath && fs.existsSync(mediaPath)) {
+    const ext = path.extname(mediaPath).slice(1).toLowerCase();
+    const mimeMap: Record<string, string> = {
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+      gif: 'image/gif', webp: 'image/webp',
+    };
+    const mimetype = mimeMap[ext] ?? 'image/png';
+    const data = fs.readFileSync(mediaPath).toString('base64');
+    const media = new MessageMedia(mimetype, data, path.basename(mediaPath));
+    await state.client.sendMessage(chatId, media, { caption: message || undefined });
+  } else {
+    await state.client.sendMessage(chatId, message);
+  }
 }
 
 export interface Contact {

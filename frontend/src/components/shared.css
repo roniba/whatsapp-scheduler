@@ -125,6 +125,16 @@
   margin-bottom: 8px;
 }
 
+.message-thumbnail {
+  max-width: 180px;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 8px;
+  display: block;
+}
+
 .message-footer {
   display: flex;
   justify-content: space-between;

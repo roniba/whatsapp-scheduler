@@ -26,7 +26,8 @@ function initSchema(db: DatabaseSync) {
       message TEXT NOT NULL,
       scheduled_at TEXT NOT NULL,
       sent_at TEXT,
-      status TEXT DEFAULT 'pending'
+      status TEXT DEFAULT 'pending',
+      media_path TEXT
     );
 
     CREATE TABLE IF NOT EXISTS templates (
@@ -41,6 +42,13 @@ function initSchema(db: DatabaseSync) {
       value TEXT NOT NULL
     );
   `);
+
+  // Migration: add media_path column if it doesn't exist yet
+  try {
+    db.exec(`ALTER TABLE scheduled_messages ADD COLUMN media_path TEXT`);
+  } catch {
+    // Column already exists — safe to ignore
+  }
 }
 
 export interface ScheduledMessage {
@@ -51,6 +59,7 @@ export interface ScheduledMessage {
   scheduled_at: string;
   sent_at: string | null;
   status: 'pending' | 'sent' | 'failed';
+  media_path: string | null;
 }
 
 export interface Template {
@@ -78,12 +87,13 @@ export function createMessage(
   recipient: string,
   recipientName: string | null,
   message: string,
-  scheduledAt: string
+  scheduledAt: string,
+  mediaPath?: string | null
 ): ScheduledMessage {
   const db = getDb();
   const result = db
-    .prepare(`INSERT INTO scheduled_messages (recipient, recipient_name, message, scheduled_at) VALUES (?, ?, ?, ?)`)
-    .run(recipient, recipientName, message, scheduledAt);
+    .prepare(`INSERT INTO scheduled_messages (recipient, recipient_name, message, scheduled_at, media_path) VALUES (?, ?, ?, ?, ?)`)
+    .run(recipient, recipientName, message, scheduledAt, mediaPath ?? null);
   return db
     .prepare(`SELECT * FROM scheduled_messages WHERE id = ?`)
     .get(result.lastInsertRowid) as unknown as ScheduledMessage;

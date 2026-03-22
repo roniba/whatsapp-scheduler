@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, Contact, Template } from '../api';
 import TemplateSelector from '../components/TemplateSelector';
+import Toast from '../components/Toast';
 import './Schedule.css';
 
 export default function Schedule() {
@@ -12,8 +13,11 @@ export default function Schedule() {
   const [selected, setSelected] = useState<Contact | null>(null);
   const [message, setMessage] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
-  const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState<{ base64: string; type: string; preview: string } | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     api.getContacts().then(setContacts);
@@ -24,10 +28,17 @@ export default function Schedule() {
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const fieldErrors = {
+    recipient: submitted && !selected ? 'Please choose a recipient.' : '',
+    message: submitted && !message && !image ? 'Please write a message or attach an image.' : '',
+    scheduledAt: submitted && !scheduledAt ? 'Please set a send time.' : '',
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selected || !message || !scheduledAt) return;
-    setError('');
+    setSubmitted(true);
+    if (!selected || (!message && !image) || !scheduledAt) return;
+    setSubmitError('');
     setLoading(true);
     try {
       await api.createMessage({
@@ -35,10 +46,13 @@ export default function Schedule() {
         recipientName: selected.name,
         message,
         scheduledAt: new Date(scheduledAt).toISOString(),
+        mediaBase64: image?.base64 ?? null,
+        mediaType: image?.type ?? null,
       });
-      navigate('/dashboard');
+      setImage(null);
+      setShowToast(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -88,10 +102,28 @@ export default function Schedule() {
     setScheduledAt(toLocalDatetimeInput(target));
   }
 
+  function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = Array.from(e.clipboardData.items);
+    const imageItem = items.find((item) => item.type.startsWith('image/'));
+    if (!imageItem) return;
+    e.preventDefault();
+    const file = imageItem.getAsFile();
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const [header, base64] = dataUrl.split(',');
+      const type = header.match(/data:(.*);base64/)?.[1] ?? 'image/png';
+      setImage({ base64, type, preview: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  }
+
   // Min datetime = now + 1 minute
   const minDatetime = toLocalDatetimeInput(new Date(Date.now() + 60_000));
 
   return (
+    <>
     <div className="schedule-page">
       <h1 className="page-title">Schedule a Message</h1>
 
@@ -99,7 +131,7 @@ export default function Schedule() {
         <div className="field">
           <label className="field-label">Recipient</label>
           <input
-            className="input"
+            className={`input${fieldErrors.recipient ? ' input--error' : ''}`}
             placeholder="Search contacts or groups…"
             value={search}
             onChange={(e) => {
@@ -129,6 +161,7 @@ export default function Schedule() {
               {selected.isGroup ? '👥 Group' : '👤 Contact'}: {selected.name}
             </p>
           )}
+          {fieldErrors.recipient && <p className="field-error">{fieldErrors.recipient}</p>}
         </div>
 
         <TemplateSelector templates={templates} onSelect={setMessage} />
@@ -136,13 +169,26 @@ export default function Schedule() {
         <div className="field">
           <label className="field-label">Message</label>
           <textarea
-            className="input textarea"
+            className={`input textarea${fieldErrors.message ? ' input--error' : ''}`}
             rows={4}
-            placeholder="Type your message…"
+            placeholder="Type your message… (paste a screenshot to attach an image)"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            required
+            onPaste={handlePaste}
           />
+          {fieldErrors.message && <p className="field-error">{fieldErrors.message}</p>}
+          {image && (
+            <div className="image-preview">
+              <img src={image.preview} alt="Attached" className="image-preview-img" />
+              <button
+                type="button"
+                className="image-preview-remove"
+                onClick={() => setImage(null)}
+              >
+                ✕ Remove image
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="field">
@@ -164,24 +210,43 @@ export default function Schedule() {
           </select>
           <input
             type="datetime-local"
-            className="input"
+            className={`input${fieldErrors.scheduledAt ? ' input--error' : ''}`}
             min={minDatetime}
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            required
           />
+          {fieldErrors.scheduledAt && <p className="field-error">{fieldErrors.scheduledAt}</p>}
         </div>
 
-        {error && <p className="form-error">{error}</p>}
+        {submitError && <p className="form-error">{submitError}</p>}
 
-        <button
-          type="submit"
-          className="btn-primary"
-          disabled={loading || !selected || !message || !scheduledAt}
-        >
-          {loading ? 'Scheduling…' : 'Schedule Message'}
-        </button>
+        {(() => {
+          const missing = [
+            !selected && 'recipient',
+            (!message && !image) && 'message',
+            !scheduledAt && 'send time',
+          ].filter(Boolean) as string[];
+          const isDisabled = loading || missing.length > 0;
+          const tooltip = missing.length > 0
+            ? `Please fill in: ${missing.join(', ')}`
+            : undefined;
+          return (
+            <div className="btn-tooltip-wrapper" data-tooltip={tooltip}>
+              <button type="submit" className="btn-primary" disabled={isDisabled}>
+                {loading ? 'Scheduling…' : 'Schedule Message'}
+              </button>
+            </div>
+          );
+        })()}
       </form>
     </div>
+
+    {showToast && (
+      <Toast
+        message="Message scheduled successfully!"
+        onDone={() => navigate('/dashboard')}
+      />
+    )}
+    </>
   );
 }

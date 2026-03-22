@@ -17,7 +17,7 @@ export function startScheduler() {
 
     for (const msg of messages) {
       try {
-        await sendMessage(msg.recipient, msg.message);
+        await sendMessage(msg.recipient, msg.message, msg.media_path);
         updateMessageStatus(msg.id, 'sent', new Date().toISOString());
         console.log(`[Scheduler] Sent message ${msg.id} to ${msg.recipient_name ?? msg.recipient}`);
 
