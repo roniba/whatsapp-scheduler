@@ -5,8 +5,10 @@ A web app to schedule WhatsApp messages to individual contacts and groups, using
 ## Features
 
 - Schedule messages to any contact or group
+- Attach images to scheduled messages — paste a screenshot directly into the message box
 - Quick-pick time presets (in 1 minute, this evening, tomorrow morning, etc.)
 - Reusable message templates
+- Delivery notifications — configure a contact or group to receive a WhatsApp confirmation whenever a scheduled message is sent
 - Automatic delivery in the background
 - Session persistence — scan QR once, stays connected across restarts
 
@@ -133,6 +135,7 @@ pm2 restart whatsapp-scheduler
 
 ## Usage
 
-- **Dashboard** — connection status and upcoming/sent messages
-- **Schedule** — pick a contact or group, write a message, set a time
+- **Dashboard** — connection status, upcoming messages, and history; remove any item from history
+- **Schedule** — pick a contact or group, write a message (or paste a screenshot to attach an image), set a time using quick-pick presets or a manual date picker
 - **Templates** — save reusable messages to insert quickly when scheduling
+- **Settings** — choose a contact or group to receive a WhatsApp confirmation whenever a scheduled message is sent successfully
