@@ -16,8 +16,8 @@ export default function Schedule() {
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<{ base64: string; type: string; preview: string } | null>(null);
-  const [submitted, setSubmitted] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ recipient: '', message: '', scheduledAt: '' });
 
   useEffect(() => {
     api.getContacts().then(setContacts);
@@ -28,16 +28,15 @@ export default function Schedule() {
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const fieldErrors = {
-    recipient: submitted && !selected ? 'Please choose a recipient.' : '',
-    message: submitted && !message && !image ? 'Please write a message or attach an image.' : '',
-    scheduledAt: submitted && !scheduledAt ? 'Please set a send time.' : '',
-  };
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
-    if (!selected || (!message && !image) || !scheduledAt) return;
+    const errors = {
+      recipient: !selected ? 'Please choose a recipient.' : '',
+      message: !message && !image ? 'Please write a message or attach an image.' : '',
+      scheduledAt: !scheduledAt ? 'Please set a send time.' : '',
+    };
+    setFieldErrors(errors);
+    if (errors.recipient || errors.message || errors.scheduledAt || !selected) return;
     setSubmitError('');
     setLoading(true);
     try {
@@ -115,6 +114,7 @@ export default function Schedule() {
       const [header, base64] = dataUrl.split(',');
       const type = header.match(/data:(.*);base64/)?.[1] ?? 'image/png';
       setImage({ base64, type, preview: dataUrl });
+      setFieldErrors((prev) => ({ ...prev, message: '' }));
     };
     reader.readAsDataURL(file);
   }
@@ -148,6 +148,7 @@ export default function Schedule() {
                   onClick={() => {
                     setSelected(c);
                     setSearch(c.name);
+                    setFieldErrors((prev) => ({ ...prev, recipient: '' }));
                   }}
                 >
                   <span className="contact-icon">{c.isGroup ? '👥' : '👤'}</span>
@@ -173,7 +174,7 @@ export default function Schedule() {
             rows={4}
             placeholder="Type your message… (paste a screenshot to attach an image)"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => { setMessage(e.target.value); setFieldErrors((prev) => ({ ...prev, message: '' })); }}
             onPaste={handlePaste}
           />
           {fieldErrors.message && <p className="field-error">{fieldErrors.message}</p>}

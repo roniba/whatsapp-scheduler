@@ -1,9 +1,9 @@
 .toast {
   position: fixed;
-  bottom: 32px;
+  top: 32px;
   left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: #075e54;
+  transform: translateX(-50%) translateY(-20px);
+  background: #1a73e8;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -20,3 +20,4 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
