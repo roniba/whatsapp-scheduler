@@ -6,6 +6,7 @@ import { startScheduler } from './scheduler';
 import statusRouter from './routes/status';
 import messagesRouter from './routes/messages';
 import templatesRouter from './routes/templates';
+import settingsRouter from './routes/settings';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api', statusRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/templates', templatesRouter);
+app.use('/api/settings', settingsRouter);
 
 // Serve the built React frontend
 const FRONTEND_DIST = path.join(__dirname, '../../frontend/dist');

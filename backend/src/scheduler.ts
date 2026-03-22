@@ -1,5 +1,5 @@
 import * as schedule from 'node-schedule';
-import { getPendingMessages, updateMessageStatus } from './db';
+import { getPendingMessages, updateMessageStatus, getSetting } from './db';
 import { sendMessage, getStatus } from './whatsapp';
 
 export function startScheduler() {
@@ -12,11 +12,21 @@ export function startScheduler() {
 
     console.log(`[Scheduler] Processing ${messages.length} pending message(s)`);
 
+    const notifyRecipient = getSetting('notification_recipient');
+    const notifyRecipientName = getSetting('notification_recipient_name');
+
     for (const msg of messages) {
       try {
         await sendMessage(msg.recipient, msg.message);
         updateMessageStatus(msg.id, 'sent', new Date().toISOString());
         console.log(`[Scheduler] Sent message ${msg.id} to ${msg.recipient_name ?? msg.recipient}`);
+
+        if (notifyRecipient) {
+          const to = msg.recipient_name ?? msg.recipient;
+          const notification = `✅ Scheduled message sent successfully\n\nTo: ${to}\nMessage: ${msg.message}`;
+          await sendMessage(notifyRecipient, notification);
+          console.log(`[Scheduler] Notification sent to ${notifyRecipientName ?? notifyRecipient}`);
+        }
       } catch (err) {
         updateMessageStatus(msg.id, 'failed');
         console.error(`[Scheduler] Failed to send message ${msg.id}:`, err);

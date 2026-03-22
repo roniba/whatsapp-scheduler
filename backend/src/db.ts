@@ -35,6 +35,11 @@ function initSchema(db: DatabaseSync) {
       message TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
 }
 
@@ -92,7 +97,7 @@ export function updateMessageStatus(id: number, status: 'sent' | 'failed', sentA
 
 export function deleteMessage(id: number) {
   getDb()
-    .prepare(`DELETE FROM scheduled_messages WHERE id = ? AND status = 'pending'`)
+    .prepare(`DELETE FROM scheduled_messages WHERE id = ?`)
     .run(id);
 }
 
@@ -110,4 +115,17 @@ export function createTemplate(name: string, message: string): Template {
 
 export function deleteTemplate(id: number) {
   getDb().prepare(`DELETE FROM templates WHERE id = ?`).run(id);
+}
+
+export function getSetting(key: string): string | null {
+  const row = getDb().prepare(`SELECT value FROM settings WHERE key = ?`).get(key) as { value: string } | undefined;
+  return row?.value ?? null;
+}
+
+export function setSetting(key: string, value: string) {
+  getDb().prepare(`INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`).run(key, value);
+}
+
+export function deleteSetting(key: string) {
+  getDb().prepare(`DELETE FROM settings WHERE key = ?`).run(key);
 }

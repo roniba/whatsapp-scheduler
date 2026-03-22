@@ -36,7 +36,7 @@ export default function Schedule() {
         message,
         scheduledAt: new Date(scheduledAt).toISOString(),
       });
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {

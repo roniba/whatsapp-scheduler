@@ -87,4 +87,17 @@ export const api = {
   async deleteTemplate(id: number): Promise<void> {
     await fetch(`${BASE}/templates/${id}`, { method: 'DELETE' });
   },
+
+  async getSettings(): Promise<{ recipient: string | null; recipientName: string | null }> {
+    const res = await fetch(`${BASE}/settings`);
+    return res.json();
+  },
+
+  async saveSettings(recipient: string | null, recipientName: string | null): Promise<void> {
+    await fetch(`${BASE}/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipient, recipientName }),
+    });
+  },
 };

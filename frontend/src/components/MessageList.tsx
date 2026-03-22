@@ -39,12 +39,12 @@ export default function MessageList({ messages, onDelete }: Props) {
                 ? `Sent ${formatDate(msg.sent_at)}`
                 : `Scheduled for ${formatDate(msg.scheduled_at)}`}
             </span>
-            {msg.status === 'pending' && onDelete && (
+            {onDelete && (
               <button
                 className="btn-danger-sm"
                 onClick={() => onDelete(msg.id)}
               >
-                Cancel
+                {msg.status === 'pending' ? 'Cancel' : 'Remove'}
               </button>
             )}
           </div>

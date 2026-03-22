@@ -2,6 +2,7 @@ import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Schedule from './pages/Schedule';
 import Templates from './pages/Templates';
+import Settings from './pages/Settings';
 import './App.css';
 
 export default function App() {
@@ -23,6 +24,9 @@ export default function App() {
             <NavLink to="/templates" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               Templates
             </NavLink>
+            <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+              Settings
+            </NavLink>
           </div>
         </nav>
         <main className="main">
@@ -31,6 +35,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/templates" element={<Templates />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
       </div>
