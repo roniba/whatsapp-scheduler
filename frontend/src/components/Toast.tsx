@@ -10,8 +10,8 @@ export default function Toast({ message, onDone }: Props) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const hide = setTimeout(() => setVisible(false), 2500);
-    const done = setTimeout(onDone, 3000);
+    const hide = setTimeout(() => setVisible(false), 1250);
+    const done = setTimeout(onDone, 1500);
     return () => { clearTimeout(hide); clearTimeout(done); };
   }, [onDone]);
 
