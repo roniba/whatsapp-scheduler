@@ -1,0 +1,81 @@
+.schedule-page {
+  max-width: 560px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #075e54;
+}
+
+.schedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.contact-dropdown {
+  list-style: none;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: white;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.contact-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.contact-option:hover {
+  background: #f8f9fa;
+}
+
+.contact-icon {
+  font-size: 16px;
+}
+
+.selected-hint {
+  font-size: 13px;
+  color: #075e54;
+  font-weight: 500;
+}
+
+.template-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.preset-select {
+  margin-bottom: 6px;
+}
+
+.form-error {
+  color: #dc3545;
+  font-size: 14px;
+}

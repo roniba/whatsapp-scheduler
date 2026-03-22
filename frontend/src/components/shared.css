@@ -1,0 +1,149 @@
+/* Shared styles - imported by index.css */
+
+.preset-select {
+  color: #6c757d;
+  width: auto !important;
+  max-width: 55%;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #111b21;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.input:focus {
+  border-color: #075e54;
+}
+
+.btn-primary {
+  background: #075e54;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+  align-self: flex-start;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #054d43;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger-sm {
+  background: none;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-danger-sm:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.empty-state {
+  color: #6c757d;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.message-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-item {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.message-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.message-recipient {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.message-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.status-pending { background: #fff3cd; color: #856404; }
+.status-sent { background: #d4edda; color: #155724; }
+.status-failed { background: #f8d7da; color: #721c24; }
+
+.message-body {
+  font-size: 14px;
+  color: #212529;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+.message-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.form-error {
+  color: #dc3545;
+  font-size: 14px;
+}
