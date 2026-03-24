@@ -37,7 +37,8 @@ export const api = {
 
   async getContacts(): Promise<Contact[]> {
     const res = await fetch(`${BASE}/contacts`);
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   },
 
   async getMessages(): Promise<ScheduledMessage[]> {

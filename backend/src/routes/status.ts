@@ -24,8 +24,8 @@ router.get('/contacts', async (_req: Request, res: Response) => {
   try {
     const contacts = await getContacts();
     res.json(contacts);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to load contacts' });
+  } catch {
+    res.json([]);
   }
 });
 
