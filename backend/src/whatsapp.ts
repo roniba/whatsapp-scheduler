@@ -1,4 +1,4 @@
-import { Client, LocalAuth, Chat, MessageMedia } from 'whatsapp-web.js';
+import { Client, LocalAuth, Chat, MessageMedia, Contact as WAContact } from 'whatsapp-web.js';
 import fs from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';
@@ -108,14 +108,26 @@ export async function getContacts(): Promise<Contact[]> {
     return [];
   }
 
-  const chats: Chat[] = await state.client.getChats();
+  const [chats, waContacts] = await Promise.all([
+    state.client.getChats() as Promise<Chat[]>,
+    state.client.getContacts() as Promise<WAContact[]>,
+  ]);
 
-  return chats
-    .filter((chat) => chat.name)
-    .map((chat) => ({
-      id: chat.id._serialized,
-      name: chat.name,
-      isGroup: chat.isGroup,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const results = new Map<string, Contact>();
+
+  // Add WhatsApp contacts from address book — only standard @c.us IDs (not @lid duplicates)
+  for (const c of waContacts) {
+    const name = c.name || c.pushname;
+    if (!name || c.id.server !== 'c.us') continue;
+    results.set(c.id._serialized, { id: c.id._serialized, name, isGroup: false });
+  }
+
+  // Add groups from chats
+  for (const chat of chats) {
+    if (chat.isGroup && chat.name) {
+      results.set(chat.id._serialized, { id: chat.id._serialized, name: chat.name, isGroup: true });
+    }
+  }
+
+  return Array.from(results.values()).sort((a, b) => a.name.localeCompare(b.name));
 }

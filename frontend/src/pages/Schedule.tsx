@@ -20,8 +20,22 @@ export default function Schedule() {
   const [fieldErrors, setFieldErrors] = useState({ recipient: '', message: '', scheduledAt: '' });
 
   useEffect(() => {
-    api.getContacts().then(setContacts);
     api.getTemplates().then(setTemplates);
+
+    // Retry fetching contacts until WhatsApp is ready and returns results
+    let cancelled = false;
+    function fetchContacts() {
+      api.getContacts().then((data) => {
+        if (cancelled) return;
+        if (data.length > 0) {
+          setContacts(data);
+        } else {
+          setTimeout(fetchContacts, 3000);
+        }
+      });
+    }
+    fetchContacts();
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = contacts.filter((c) =>

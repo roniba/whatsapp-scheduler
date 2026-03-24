@@ -10,13 +10,24 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.getContacts().then(setContacts);
+    let cancelled = false;
+    function fetchContacts() {
+      api.getContacts().then((data) => {
+        if (cancelled) return;
+        if (data.length > 0) setContacts(data);
+        else setTimeout(fetchContacts, 3000);
+      });
+    }
+    fetchContacts();
+
     api.getSettings().then(({ recipient, recipientName }) => {
       if (recipient) {
         setSelected({ id: recipient, name: recipientName ?? recipient, isGroup: recipient.endsWith('@g.us') });
         setSearch(recipientName ?? recipient);
       }
     });
+
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = contacts.filter((c) =>
