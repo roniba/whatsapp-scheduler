@@ -41,6 +41,11 @@ export default function Dashboard() {
     loadMessages();
   }
 
+  async function handleReschedule(id: number, scheduledAt: string) {
+    await api.rescheduleMessage(id, scheduledAt);
+    loadMessages();
+  }
+
   const pending = messages.filter((m) => m.status === 'pending');
   const history = messages.filter((m) => m.status !== 'pending');
 
@@ -66,7 +71,7 @@ export default function Dashboard() {
         <>
           <section className="card">
             <h2 className="section-title">Upcoming Messages</h2>
-            <MessageList messages={pending} onDelete={handleDelete} />
+            <MessageList messages={pending} onDelete={handleDelete} onReschedule={handleReschedule} />
           </section>
 
           {history.length > 0 && (

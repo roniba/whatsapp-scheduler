@@ -99,6 +99,12 @@ export function createMessage(
     .get(result.lastInsertRowid) as unknown as ScheduledMessage;
 }
 
+export function rescheduleMessage(id: number, scheduledAt: string) {
+  getDb()
+    .prepare(`UPDATE scheduled_messages SET scheduled_at = ? WHERE id = ? AND status = 'pending'`)
+    .run(scheduledAt, id);
+}
+
 export function updateMessageStatus(id: number, status: 'sent' | 'failed', sentAt?: string) {
   getDb()
     .prepare(`UPDATE scheduled_messages SET status = ?, sent_at = ? WHERE id = ?`)

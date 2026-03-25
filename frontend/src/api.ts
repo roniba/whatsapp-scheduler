@@ -70,6 +70,14 @@ export const api = {
     await fetch(`${BASE}/messages/${id}`, { method: 'DELETE' });
   },
 
+  async rescheduleMessage(id: number, scheduledAt: string): Promise<void> {
+    await fetch(`${BASE}/messages/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scheduledAt }),
+    });
+  },
+
   async getTemplates(): Promise<Template[]> {
     const res = await fetch(`${BASE}/templates`);
     return res.json();

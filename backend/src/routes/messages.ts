@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getAllMessages, createMessage, deleteMessage } from '../db';
+import { getAllMessages, createMessage, deleteMessage, rescheduleMessage } from '../db';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -42,6 +42,22 @@ router.post('/', (req: Request, res: Response) => {
 
   const msg = createMessage(recipient, recipientName ?? null, message, scheduledDate.toISOString(), mediaPath);
   res.status(201).json(msg);
+});
+
+router.patch('/:id', (req: Request, res: Response) => {
+  const id = parseInt(req.params.id, 10);
+  const { scheduledAt } = req.body;
+  if (isNaN(id) || !scheduledAt) {
+    res.status(400).json({ error: 'Invalid id or scheduledAt' });
+    return;
+  }
+  const scheduledDate = new Date(scheduledAt);
+  if (isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+    res.status(400).json({ error: 'scheduledAt must be a valid date in the future' });
+    return;
+  }
+  rescheduleMessage(id, scheduledDate.toISOString());
+  res.status(204).send();
 });
 
 router.delete('/:id', (req: Request, res: Response) => {

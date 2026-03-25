@@ -82,18 +82,23 @@ export async function sendMessage(recipient: string, message: string, mediaPath?
   }
   const chatId = recipient.includes('@') ? recipient : `${recipient}@c.us`;
 
-  if (mediaPath && fs.existsSync(mediaPath)) {
-    const ext = path.extname(mediaPath).slice(1).toLowerCase();
-    const mimeMap: Record<string, string> = {
-      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
-      gif: 'image/gif', webp: 'image/webp',
-    };
-    const mimetype = mimeMap[ext] ?? 'image/png';
-    const data = fs.readFileSync(mediaPath).toString('base64');
-    const media = new MessageMedia(mimetype, data, path.basename(mediaPath));
-    await state.client.sendMessage(chatId, media, { caption: message || undefined });
-  } else {
-    await state.client.sendMessage(chatId, message);
+  try {
+    if (mediaPath && fs.existsSync(mediaPath)) {
+      const ext = path.extname(mediaPath).slice(1).toLowerCase();
+      const mimeMap: Record<string, string> = {
+        jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+        gif: 'image/gif', webp: 'image/webp',
+      };
+      const mimetype = mimeMap[ext] ?? 'image/png';
+      const data = fs.readFileSync(mediaPath).toString('base64');
+      const media = new MessageMedia(mimetype, data, path.basename(mediaPath));
+      await state.client.sendMessage(chatId, media, { caption: message || undefined });
+    } else {
+      await state.client.sendMessage(chatId, message);
+    }
+  } catch (err) {
+    handlePuppeteerError(err);
+    throw err;
   }
 }
 
@@ -103,30 +108,53 @@ export interface Contact {
   isGroup: boolean;
 }
 
+function handlePuppeteerError(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes('detached Frame') || msg.includes('Target closed') || msg.includes('Session closed')) {
+    console.error('[WhatsApp] Puppeteer error detected, reinitializing:', msg);
+    state.status = 'disconnected';
+    state.qr = null;
+    state.client = null;
+    whatsappEvents.emit('status_change', { status: 'disconnected', qr: null });
+    setTimeout(() => initWhatsApp(), 3000);
+  }
+}
+
 export async function getContacts(): Promise<Contact[]> {
   if (!state.client || state.status !== 'ready') {
     return [];
   }
 
-  const [chats, waContacts] = await Promise.all([
-    state.client.getChats() as Promise<Chat[]>,
-    state.client.getContacts() as Promise<WAContact[]>,
-  ]);
-
   const results = new Map<string, Contact>();
 
-  // Add WhatsApp contacts from address book — only standard @c.us IDs (not @lid duplicates)
-  for (const c of waContacts) {
-    const name = c.name || c.pushname;
-    if (!name || c.id.server !== 'c.us') continue;
-    results.set(c.id._serialized, { id: c.id._serialized, name, isGroup: false });
-  }
+  try {
+    const chats = await state.client.getChats() as Chat[];
 
-  // Add groups from chats
-  for (const chat of chats) {
-    if (chat.isGroup && chat.name) {
-      results.set(chat.id._serialized, { id: chat.id._serialized, name: chat.name, isGroup: true });
+    // Try to get the full address book; fall back gracefully
+    let waContacts: WAContact[] = [];
+    try {
+      waContacts = await state.client.getContacts() as WAContact[];
+    } catch {
+      // Fall back to contacts extracted from chats only
     }
+
+    // Add address-book contacts with valid @c.us IDs
+    for (const c of waContacts) {
+      const name = c.name || c.pushname;
+      if (!name || c.id.server !== 'c.us') continue;
+      results.set(c.id._serialized, { id: c.id._serialized, name, isGroup: false });
+    }
+
+    // Add all chats (groups + individuals) — covers anyone not in address book
+    for (const chat of chats) {
+      if (!chat.name) continue;
+      if (!results.has(chat.id._serialized)) {
+        results.set(chat.id._serialized, { id: chat.id._serialized, name: chat.name, isGroup: chat.isGroup });
+      }
+    }
+  } catch (err) {
+    handlePuppeteerError(err);
+    return [];
   }
 
   return Array.from(results.values()).sort((a, b) => a.name.localeCompare(b.name));

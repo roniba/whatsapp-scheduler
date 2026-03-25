@@ -125,6 +125,52 @@
   margin-bottom: 8px;
 }
 
+.edit-time-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: 6px;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.edit-time-btn:hover {
+  opacity: 1;
+}
+
+.reschedule-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.reschedule-input {
+  font-size: 13px;
+  padding: 4px 8px;
+  width: auto;
+}
+
+.reschedule-confirm {
+  font-size: 12px;
+  padding: 4px 12px;
+}
+
+.btn-cancel-sm {
+  background: none;
+  border: 1px solid #adb5bd;
+  color: #6c757d;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-cancel-sm:hover {
+  background: #f8f9fa;
+}
+
 .message-thumbnail {
   max-width: 180px;
   max-height: 120px;
