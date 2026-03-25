@@ -85,9 +85,10 @@ function MessageItem({ msg, onDelete, onReschedule }: {
               ? `Sent ${formatDate(msg.sent_at)}`
               : `Scheduled for ${formatDate(msg.scheduled_at)}`}
             {msg.status === 'pending' && onReschedule && (
-              <button className="edit-time-btn" onClick={startEdit} title="Edit send time">
-                ✏️
-              </button>
+              <button className="edit-time-btn" onClick={startEdit} title="Edit send time">✏️</button>
+            )}
+            {msg.status === 'failed' && onReschedule && (
+              <button className="btn-retry" onClick={startEdit}>🔁 Retry</button>
             )}
           </span>
         )}

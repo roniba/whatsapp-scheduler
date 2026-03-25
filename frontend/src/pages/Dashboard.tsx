@@ -77,7 +77,7 @@ export default function Dashboard() {
           {history.length > 0 && (
             <section className="card">
               <h2 className="section-title">History</h2>
-              <MessageList messages={history} onDelete={handleDelete} />
+              <MessageList messages={history} onDelete={handleDelete} onReschedule={handleReschedule} />
             </section>
           )}
         </>

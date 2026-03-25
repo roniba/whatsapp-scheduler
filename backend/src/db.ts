@@ -101,7 +101,7 @@ export function createMessage(
 
 export function rescheduleMessage(id: number, scheduledAt: string) {
   getDb()
-    .prepare(`UPDATE scheduled_messages SET scheduled_at = ? WHERE id = ? AND status = 'pending'`)
+    .prepare(`UPDATE scheduled_messages SET scheduled_at = ?, status = 'pending', sent_at = NULL WHERE id = ? AND status IN ('pending', 'failed')`)
     .run(scheduledAt, id);
 }
 

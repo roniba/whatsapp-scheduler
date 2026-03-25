@@ -157,6 +157,22 @@
   padding: 4px 12px;
 }
 
+.btn-retry {
+  background: #075e54;
+  color: white;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-retry:hover {
+  background: #054d43;
+}
+
 .btn-cancel-sm {
   background: none;
   border: 1px solid #adb5bd;
