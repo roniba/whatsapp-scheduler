@@ -53,6 +53,29 @@
   color: white;
 }
 
+.connection-banner {
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.connection-banner--disconnected {
+  background: #fdecea;
+  color: #b71c1c;
+}
+
+.connection-banner--qr {
+  background: #fff8e1;
+  color: #5d4037;
+}
+
+.connection-banner-link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .main {
   flex: 1;
   padding: 32px 24px;
