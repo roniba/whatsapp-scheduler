@@ -1,6 +1,7 @@
 import { Client, LocalAuth, Chat, MessageMedia, Contact as WAContact } from 'whatsapp-web.js';
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import { EventEmitter } from 'events';
 
 export type ConnectionStatus = 'disconnected' | 'qr_ready' | 'ready';
@@ -108,15 +109,44 @@ export interface Contact {
   isGroup: boolean;
 }
 
+function killStaleChromeProcess() {
+  const lockFile = path.join(__dirname, '../../data/.wwebjs_auth/session/SingletonLock');
+  try {
+    // SingletonLock is a symlink pointing to "hostname-PID"
+    const target = fs.readlinkSync(lockFile);
+    const pid = parseInt(target.split('-').pop() ?? '', 10);
+    if (pid) {
+      process.kill(pid, 'SIGKILL');
+      console.log(`[WhatsApp] Killed stale Chrome process PID ${pid}`);
+    }
+  } catch {
+    // Lock file absent or process already gone — try a broader pkill as fallback
+    try {
+      execSync('pkill -9 -f wwebjs_auth', { stdio: 'ignore' });
+    } catch { /* nothing left to kill */ }
+  }
+}
+
 function handlePuppeteerError(err: unknown) {
   const msg = err instanceof Error ? err.message : String(err);
   if (msg.includes('detached Frame') || msg.includes('Target closed') || msg.includes('Session closed')) {
     console.error('[WhatsApp] Puppeteer error detected, reinitializing:', msg);
+
+    const oldClient = state.client;
     state.status = 'disconnected';
     state.qr = null;
     state.client = null;
     whatsappEvents.emit('status_change', { status: 'disconnected', qr: null });
-    setTimeout(() => initWhatsApp(), 3000);
+
+    // Destroy the old client first, then kill any lingering Chrome, then reinit
+    const cleanup = oldClient
+      ? oldClient.destroy().catch(() => {})
+      : Promise.resolve();
+
+    cleanup.finally(() => {
+      killStaleChromeProcess();
+      setTimeout(() => initWhatsApp(), 3000);
+    });
   }
 }
 
