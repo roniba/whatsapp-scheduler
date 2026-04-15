@@ -73,7 +73,18 @@ export function initWhatsApp() {
     console.log('[WhatsApp] Disconnected:', reason);
   });
 
-  client.initialize();
+  client.initialize().catch((err: unknown) => {
+    handlePuppeteerError(err);
+    // If handlePuppeteerError didn't recognize the error pattern, force a reset anyway
+    if (state.client === client) {
+      state.status = 'disconnected';
+      state.qr = null;
+      state.client = null;
+      whatsappEvents.emit('status_change', { status: 'disconnected', qr: null });
+      killStaleChromeProcess();
+      setTimeout(() => initWhatsApp(), 5000);
+    }
+  });
   state.client = client;
 }
 
@@ -129,7 +140,7 @@ function killStaleChromeProcess() {
 
 function handlePuppeteerError(err: unknown) {
   const msg = err instanceof Error ? err.message : String(err);
-  if (msg.includes('detached Frame') || msg.includes('Target closed') || msg.includes('Session closed')) {
+  if (msg.includes('detached Frame') || msg.includes('Target closed') || msg.includes('Session closed') || msg.includes('Page.navigate timed out') || msg.includes('ProtocolError') || msg.includes('auth timeout')) {
     console.error('[WhatsApp] Puppeteer error detected, reinitializing:', msg);
 
     const oldClient = state.client;
